@@ -4,7 +4,15 @@
 
 const SongController = {};
 
-SongController.register = async function (ctx) {
+SongController.getSongList = async function (ctx) {
+	const regType = ctx.request.body.regType;
+	ctx.body = {
+		a: 111,
+		b: 222
+	}
+}
+
+SongController.getSongDetail = async function (ctx) {
 	const regType = ctx.request.body.regType;
 	
 }
