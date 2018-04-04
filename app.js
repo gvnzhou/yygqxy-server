@@ -1,8 +1,8 @@
 const Koa = require('koa');
+const bodyParser = require('koa-bodyparser');
 const Config = require('./config');
 const router = require('./routes/index');
 const mongodb = require('./lib/mongodb');
-const bodyParser = require('koa-bodyparser');
 
 mongodb.createConnection(Config.MongoDB.host + ':' + Config.MongoDB.port);
 
