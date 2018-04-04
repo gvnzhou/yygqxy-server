@@ -1,17 +1,10 @@
 const Koa = require('koa');
-const router = require('./routes/index');
 const bodyParser = require('koa-bodyparser');
+const Config = require('./config');
+const router = require('./routes/index');
+const mongodb = require('./lib/mongodb');
 
-const env = process.env.NODE_ENV || 'development';
-
-const config = {
-  development: {
-    port: 5000
-  },
-  production: {
-    port: 5000
-  }
-};
+mongodb.createConnection(Config.MongoDB.host + ':' + Config.MongoDB.port);
 
 const app = new Koa();
 
@@ -19,7 +12,6 @@ app.use(bodyParser());
 
 app.use(router.routes(), router.allowedMethods())
 
-app.listen(config[env].port, () => {
-
-  console.warn('Server is running. Listening at ' + config[env].port + '...');
+app.listen(Config.Server.port, () => {
+  console.warn('Server is running. Listening at ' + Config.Server.port + '...');
 });
