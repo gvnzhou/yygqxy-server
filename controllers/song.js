@@ -6,14 +6,24 @@ const assert = require('assert');
 
 const SongController = {};
 
-SongController.getSongList = async function (ctx, next) {
-	
-	// 查询数据库 获取数据
-	
-	// const regType = ctx.request.body.regType;
-	// ctx.body = await db.c('song');
-	const res = await db.c('song').find({}).limit(3);
-	ctx.body = res.toString();
+SongController.getSongList = async (ctx, next) => {
+	try {
+		let list = await db.c('song').find().limit(3).toArray();
+		let res = {
+			code: '0000',
+			message: 'success',
+			data: list
+		};
+		ctx.body = res;		
+		
+	} catch (err) {
+			let res = {
+					code: '9999',
+					message: 'error',
+					data: err
+			};
+			ctx.body = res;
+	}
 }
 
 SongController.getSongDetail = async function (ctx) {
