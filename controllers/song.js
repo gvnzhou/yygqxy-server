@@ -10,7 +10,6 @@ SongController.getSongList = async (ctx, next) => {
   let list = null;
   let res = null;
   try {
-    // 是否存在query
     if (JSON.stringify(ctx.query) !== '{}') {
       if (Object.prototype.hasOwnProperty.call(ctx.query, 'limit')) {
         list = await db.c('song').find().limit(+ctx.query.limit).toArray();

@@ -7,8 +7,8 @@ const async = require('async');
 
 const Spider = (function SpiderModule() {
   // Spider Config
-  targetURL = 'https://www.feitsui.com/page_s/mandarin.html';
-  baseURL = 'https://www.feitsui.com';
+  const targetURL = 'https://www.feitsui.com/page_s/mandarin.html';
+  const baseURL = 'https://www.feitsui.com';
   // fetch target urls cell
   function startCrawl () {
     // console.log('start crawling urls......');
