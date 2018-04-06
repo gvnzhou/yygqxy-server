@@ -7,28 +7,36 @@ const assert = require('assert');
 const SongController = {};
 
 SongController.getSongList = async (ctx, next) => {
+	let list = null;
+	let res = null;
 	try {
-		let list = await db.c('song').find().limit(3).toArray();
-		let res = {
+		// 是否存在query
+		if (JSON.stringify(ctx.query) !== '{}') {
+			if (Object.prototype.hasOwnProperty.call(ctx.query, 'limit')) {
+				list = await db.c('song').find().limit(+ctx.query.limit).toArray();
+			} else {
+				list = await db.c('song').find().toArray();
+			}
+		}
+		res = {
 			code: '0000',
 			message: 'success',
 			data: list
 		};
-		ctx.body = res;		
-		
 	} catch (err) {
-			let res = {
-					code: '9999',
-					message: 'error',
-					data: err
-			};
-			ctx.body = res;
+		res = {
+			code: '9999',
+			message: 'error',
+			data: err.toString()
+		};
 	}
+	ctx.body = res;
 }
 
 SongController.getSongDetail = async function (ctx) {
 	const regType = ctx.request.body.regType;
 	
+
 }
 
 module.exports = SongController;
