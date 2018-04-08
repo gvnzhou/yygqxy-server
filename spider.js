@@ -40,6 +40,9 @@ const Spider = (function SpiderModule() {
         songObj.singer = $('#songinfo a').first().text();
         songObj.introduction = $('#songinfo p').last().text();
         songObj.content = $('#romanisation p').text();
+        songObj.clickCount = 0;
+        songObj.updateTime = +new Date();
+        
         // filter ad
         songObj.content = songObj.content.replace(/翡翠粤语歌词/g, '');
         songObj.content = songObj.content.replace(/https\S+[0-9]\//g, '');
