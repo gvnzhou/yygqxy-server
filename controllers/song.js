@@ -2,6 +2,7 @@
 // const model = require('../models/model');
 // const md5 = require('js-md5');
 const db = require('../lib/mongodb');
+var ObjectID = require('mongodb').ObjectID;
 const assert = require('assert');
 
 const SongController = {};
@@ -35,8 +36,22 @@ SongController.getSongList = async (ctx, next) => {
 }
 
 SongController.getSongDetail = async function (ctx) {
-  const regType = ctx.request.body.regType;
-  
+  let obj = null;
+  let res = null;
+  try {
+    obj = await db.c('song').find({_id: ObjectID(ctx.params.id)}).toArray();
+        
+    res = {
+      code: '200',
+      data: obj
+    };
+  } catch (err) {
+    res = {
+      code: '999',
+      error: err.toString()
+    };
+  }
+  ctx.body = res;
 
 }
 
