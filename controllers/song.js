@@ -6,20 +6,20 @@ const assert = require('assert');
 
 const SongController = {};
 
+// limit、keyword 、page、per_page、sortby、order
 SongController.getSongList = async (ctx, next) => {
   let list = null;
   let res = null;
+  let limitNum = 20; // 默认返回最大记录数
   try {
     if (JSON.stringify(ctx.query) !== '{}') {
-      if (Object.prototype.hasOwnProperty.call(ctx.query, 'limit')) {
-        list = await db.c('song').find({}).limit(+ctx.query.limit).toArray();
-      } else if (Object.prototype.hasOwnProperty.call(ctx.query, 'keyword')) {
-        list = await db.c('song').find({name: { $regex: ctx.query.keyword }}).toArray();
+      if (Object.prototype.hasOwnProperty.call(ctx.query, 'keyword')) {
+        list = await db.c('song').find({name: { $regex: ctx.query.keyword }}).limit(+ctx.query.limit || limitNum).toArray();
       } else {
-        list = await db.c('song').find({}).toArray();
+        list = await db.c('song').find({}).limit(+ctx.query.limit || limitNum).toArray();
       }
     } else {
-      list = await db.c('song').find({}).toArray();
+      list = await db.c('song').find({}).limit(limitNum).toArray();
     }
     res = {
       code: '200',
