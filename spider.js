@@ -44,10 +44,9 @@ const Spider = (function SpiderModule() {
         songObj.updateTime = +new Date();
         
         // filter ad
-        songObj.content = songObj.content.replace(/翡翠粤语歌词/g, '');
-        songObj.content = songObj.content.replace(/https\S+[0-9]\//g, '');
+        songObj.content = songObj.content.replace(/翡翠粤语歌词/g, '').replace(/https\S+[0-9]\//g, '').replace(/([\u4e00-\u9fa5])(\w)/g, '$1|$2').replace(/(\w)(\s*)([\u4e00-\u9fa5])/g, '$1|$3');
         // add split mark
-        songObj.content = songObj.content.replace(/([\u4e00-\u9fa5])(\w)|(\w)([\u4e00-\u9fa5])/g, '$1|$2');
+        // songObj.content = songObj.content.replace(/(([\u4e00-\u9fa5])(\s*)(\w))|((\w)(\s*)([\u4e00-\u9fa5]))/g, '[$1]');
 
         callback(null, songObj)
       })
