@@ -1,9 +1,6 @@
-// const errorMsg = require('../core/errorMsg');
-// const model = require('../models/model');
-// const md5 = require('js-md5');
 const db = require('../lib/mongodb');
 var ObjectID = require('mongodb').ObjectID;
-const assert = require('assert');
+// const assert = require('assert');
 
 const SongController = {};
 
@@ -23,35 +20,66 @@ SongController.getSongList = async (ctx, next) => {
       list = await db.c('song').find({}).limit(limitNum).toArray();
     }
     res = {
-      code: '200',
+      code: 200,
       data: list
     };
   } catch (err) {
     res = {
-      code: '999',
+      code: 999,
       error: err.toString()
     };
   }
   ctx.body = res;
 }
 
-SongController.getSongDetail = async function (ctx) {
+SongController.getSongDetail = async function (ctx, next) {
   let obj = null;
   let res = null;
   try {
     obj = await db.c('song').find({_id: ObjectID(ctx.params.id)}).toArray();
-        
     res = {
-      code: '200',
+      code: 200,
       data: obj
     };
   } catch (err) {
     res = {
-      code: '999',
+      code: 999,
       error: err.toString()
     };
   }
   ctx.body = res;
+
+}
+
+SongController.postFeedback = async function (ctx, next) {
+  let contact = ctx.request.body.hasOwnProperty('contact') ? ctx.request.body.contact : '';
+
+  const insertFeedback = function (data) {
+    return new Promise(function (resolve, reject) {
+      db.c('feedback').insertOne(data, function(err, result) {
+        if (err) return reject(err);
+        resolve(result.result);
+      });
+    })
+  }
+
+  if (ctx.request.body.hasOwnProperty('suggest') && ctx.request.body.suggest.length > 0) {
+    let data = {
+      suggest: ctx.request.body.suggest,
+      contact: contact,
+      createTime: +new Date()
+    };
+    let res = await insertFeedback(data);
+    ctx.body = {
+      code: 200,
+      data: res
+    };
+  } else {
+    ctx.body = {
+      code: 999,
+      error: 'suggest字段不能为空！'
+    };
+  }
 
 }
 
