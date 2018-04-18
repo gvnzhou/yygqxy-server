@@ -5,6 +5,8 @@ const cheerio = require('cheerio');
 const eventproxy = require('eventproxy');
 const async = require('async');
 
+
+
 const Spider = (function SpiderModule() {
   // Spider Config
   const targetURL = 'https://www.feitsui.com/page_s/mandarin.html';
