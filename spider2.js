@@ -9,25 +9,41 @@ const async = require('async');
 
 const Spider = (function SpiderModule() {
   // Spider Config
-  const targetURL = 'https://www.feitsui.com/page_s/mandarin.html';
-  const baseURL = 'https://www.feitsui.com';
+  const targetURL = 'http://www.midmusic.cn/tag/mianfei/page/';
+  const baseURL = 'http://www.midmusic.cn/';
   // fetch target urls cell
   function startCrawl () {
     // console.log('start crawling urls......');
-    superagent.get(targetURL).end(function (err, res) {
-      assert.equal(null, err);
+    let index = 1;
+    let isFetchNext = true;
+    let urlsArray = [];
 
-      let urlsArray = [];			
-      let $ = cheerio.load(res.text);
+    function fetchListUrl (url) {
+      superagent.get(url).end(function (err, res) {
+        assert.equal(null, err);
+
+        let $ = cheerio.load(res.text);
+        $('.content>.excerpt').each(function (item) {
+          urlsArray.push($(this).find('h2>a').attr('href'));
+        })
+
+        // 判断是否存在下一页
+        if ($('.next-page').children().length) {
+          ++index
+          console.log(index)
+          fetchListUrl(targetURL + index)
+        } else {
+          fetchTargetData(urlsArray)
+        }
   
-      $('.mandarin').find('a').each(function (item) {
-        urlsArray.push(baseURL + $(this).attr('href'));
-      })
+        // console.log('finish crawling urls......');
+        // fetchTargetData(urlsArray)
+      });
+    }
 
-      // console.log('finish crawling urls......');
-      fetchTargetData(urlsArray)
-    });
+    fetchListUrl(targetURL + index)
   }
+
   function fetchTargetData (urls) {
     function fetchUrl(url, callback) {
       curCount++;
@@ -38,15 +54,17 @@ const Spider = (function SpiderModule() {
         
         let $ = cheerio.load(res.text);
         let songObj = {};
-        songObj.name = $('#rightcolumn h1').text() + '（粤拼）';
-        songObj.singer = $('#songinfo a').first().text();
-        songObj.introduction = $('#songinfo p').last().text();
-        songObj.content = $('#romanisation p').text();
+        let tempStr = $('.article-title a').text().split('-');
+        songObj.name = tempStr[1].replace(/《(\S+)》粤语谐音发音/, '$1');
+        songObj.singer = tempStr[0];
+        songObj.introduction = '';
+        songObj.content = $('.article-content p').eq(-2).text();
         songObj.clickCount = 0;
         songObj.updateTime = +new Date();
-        
+
         // filter ad
-        songObj.content = songObj.content.replace(/翡翠粤语歌词/g, '').replace(/https\S+[0-9]\//g, '').replace(/([\u4e00-\u9fa5])(\w)/g, '$1|$2').replace(/(\w)(\s*)([\u4e00-\u9fa5])/g, '$1|$3');
+        songObj.content = songObj.content.replace(/\n\S+\n\S+\n/, '').replace(/\n/g, '|');
+        
         // add split mark
         // songObj.content = songObj.content.replace(/(([\u4e00-\u9fa5])(\s*)(\w))|((\w)(\s*)([\u4e00-\u9fa5]))/g, '[$1]');
 
