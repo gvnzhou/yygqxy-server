@@ -4,7 +4,8 @@ const Config = require('./config');
 const router = require('./routes/index');
 const mongodb = require('./lib/mongodb');
 
-mongodb.createConnection(Config.MongoDB.host + ':' + Config.MongoDB.port);
+// mongodb.createConnection('mongodb://' + Config.MongoDB.username + ':' + Config.MongoDB.password + '@' + Config.MongoDB.host + ':' + Config.MongoDB.port);
+mongodb.createConnection('mongodb://' + Config.MongoDB.host + ':' + Config.MongoDB.port);
 
 const app = new Koa();
 

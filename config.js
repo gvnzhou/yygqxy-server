@@ -6,9 +6,11 @@ const Config = {
       port: 5000
     },
     MongoDB: {
-      host: 'mongodb://localhost',
+      host: 'localhost',
       port: '27017',
-      dbName: 'yygqxy'
+      dbName: 'yygqxy',
+      username: 'admin',
+      password: 'zij121xc'
     }
   },
   production: {
@@ -17,7 +19,7 @@ const Config = {
       port: 5000
     },
     MongoDB: {
-      host: 'mongodb://127.0.0.1',
+      host: '127.0.0.1',
       port: '27017',
       dbName: 'yygqxy'
     }
