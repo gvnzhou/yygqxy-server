@@ -30,7 +30,7 @@ const Spider = (function SpiderModule() {
         // 判断是否存在下一页
         if ($('.next-page').children().length) {
           ++index
-          console.log(index)
+          // console.log(index)
           fetchListUrl(targetURL + index)
         } else {
           fetchTargetData(urlsArray)
