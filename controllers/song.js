@@ -14,10 +14,10 @@ SongController.getSongList = async (ctx, next) => {
       if (Object.prototype.hasOwnProperty.call(ctx.query, 'keyword')) {
         list = await db.c('song').find({name: { $regex: ctx.query.keyword }}).limit(+ctx.query.limit || limitNum).toArray();
       } else {
-        list = await db.c('song').find({}).limit(+ctx.query.limit || limitNum).toArray();
+        list = await db.c('song').find({}).limit(+ctx.query.limit || limitNum).sort({clickCount: -1}).toArray();
       }
     } else {
-      list = await db.c('song').find({}).limit(limitNum).toArray();
+      list = await db.c('song').find({}).limit(limitNum).sort({clickCount: -1}).toArray();
     }
     res = {
       code: 200,
@@ -41,6 +41,8 @@ SongController.getSongDetail = async function (ctx, next) {
       code: 200,
       data: obj
     };
+    // 增加点击量
+    db.c('song').updateOne({_id: ObjectID(ctx.params.id)}, {$set: {clickCount : obj[0].clickCount + 1}})
   } catch (err) {
     res = {
       code: 999,

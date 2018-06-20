@@ -1,3 +1,6 @@
+/*
+ * 目标地址：https://www.feitsui.com/page_s/mandarin.html
+ */
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 const superagent = require('superagent');

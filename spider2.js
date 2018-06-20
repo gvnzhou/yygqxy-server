@@ -1,3 +1,6 @@
+/*
+ * 爬取地址：http://www.midmusic.cn/tag/mianfei/page/
+ */
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 const superagent = require('superagent');
@@ -5,13 +8,11 @@ const cheerio = require('cheerio');
 const eventproxy = require('eventproxy');
 const async = require('async');
 
-
-
 const Spider = (function SpiderModule() {
   // Spider Config
   const targetURL = 'http://www.midmusic.cn/tag/mianfei/page/';
   const baseURL = 'http://www.midmusic.cn/';
-  // fetch target urls cell
+
   function startCrawl () {
     // console.log('start crawling urls......');
     let index = 1;
@@ -81,6 +82,7 @@ const Spider = (function SpiderModule() {
       storeResult(results);
     });
   }
+
   function storeResult(res) {
     // Connection URL
     const url = 'mongodb://localhost:27017';
@@ -108,6 +110,7 @@ const Spider = (function SpiderModule() {
   return {
     startCrawl
   };
+
 })();
 
 Spider.startCrawl();
