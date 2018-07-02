@@ -12,7 +12,7 @@ SongController.getSongList = async (ctx, next) => {
   try {
     if (JSON.stringify(ctx.query) !== '{}') {
       if (Object.prototype.hasOwnProperty.call(ctx.query, 'keyword')) {
-        list = await db.c('song').find({name: { $regex: ctx.query.keyword }}).limit(+ctx.query.limit || limitNum).toArray();
+        list = await db.c('song').find({"$or": [{name: { $regex: ctx.query.keyword }}, {singer: { $regex: ctx.query.keyword }}]}).limit(+ctx.query.limit || limitNum).toArray();
       } else {
         list = await db.c('song').find({}).limit(+ctx.query.limit || limitNum).sort({clickCount: -1}).toArray();
       }

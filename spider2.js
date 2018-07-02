@@ -14,7 +14,7 @@ const Spider = (function SpiderModule() {
   const baseURL = 'http://www.midmusic.cn/';
 
   function startCrawl () {
-    // console.log('start crawling urls......');
+    console.log('start crawling urls......');
     let index = 1;
     let isFetchNext = true;
     let urlsArray = [];

@@ -15,7 +15,7 @@ const Spider = (function SpiderModule() {
 	const baseURL = 'https://www.feitsui.com';
 	// fetch target urls cell
 	function startCrawl () {
-		// console.log('start crawling urls......');
+		console.log('start crawling urls......');
 		superagent.get(targetURL).end(function (err, res) {
 			assert.equal(null, err);
 

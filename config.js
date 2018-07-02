@@ -10,7 +10,7 @@ const Config = {
       port: '27017',
       dbName: 'yygqxy',
       username: 'admin',
-      password: 'zij121xc'
+      password: '123456'
     }
   },
   production: {
