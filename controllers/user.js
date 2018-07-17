@@ -5,7 +5,7 @@ const superagent = require('superagent');
 const Config = require('../config');
 const { exec } = require('child_process');
 
-let UserController = {};
+const UserController = {};
 
 UserController.login = async function (ctx) {
 	// 发起get请求, 获取openid和session_key
