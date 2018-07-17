@@ -40,7 +40,6 @@
 
 ### config.js 文件格式（涉及小程序和服务器配置信息）
 
-`
 const env = 'development';
 const Config = {
   development: {
@@ -78,6 +77,6 @@ const Config = {
 };
 
 module.exports = Config[env];
-`
+
 
 
