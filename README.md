@@ -38,3 +38,46 @@
 - [x] mongodb存储数据
 
 
+### config.js 文件格式（涉及小程序和服务器配置信息）
+
+`
+const env = 'development';
+const Config = {
+  development: {
+    WeChat: {
+      APPID: 'xxx',
+      SECRET: 'xxx'
+    },
+    Server: {
+      host: '127.0.0.1',
+      port: 5000
+    },
+    MongoDB: {
+      host: 'localhost',
+      port: '27017',
+      dbName: 'yygqxy',
+      username: 'admin',
+      password: '123456'
+    }
+  },
+  production: {
+    WeChat: {
+	  APPID: 'xxx',
+      SECRET: 'xxx'
+    },
+    Server: {
+      host: '127.0.0.1',
+      port: 5000
+    },
+    MongoDB: {
+      host: '127.0.0.1',
+      port: '27017',
+      dbName: 'yygqxy'
+    }
+  }
+};
+
+module.exports = Config[env];
+`
+
+
