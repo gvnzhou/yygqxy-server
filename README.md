@@ -62,7 +62,7 @@ const Config = {
   },
   production: {
     WeChat: {
-	  APPID: 'xxx',
+      APPID: 'xxx',
       SECRET: 'xxx'
     },
     Server: {
