@@ -1,8 +1,8 @@
 const db = require('../lib/mongodb');
-var ObjectID = require('mongodb').ObjectID;
+const ObjectID = require('mongodb').ObjectID;
 // const assert = require('assert');
 
-const SongController = {};
+let SongController = {};
 
 // limit、keyword 、page、per_page、sortby、order
 SongController.getSongList = async (ctx, next) => {
@@ -50,38 +50,6 @@ SongController.getSongDetail = async function (ctx, next) {
     };
   }
   ctx.body = res;
-
-}
-
-SongController.postFeedback = async function (ctx, next) {
-  let contact = ctx.request.body.hasOwnProperty('contact') ? ctx.request.body.contact : '';
-
-  const insertFeedback = function (data) {
-    return new Promise(function (resolve, reject) {
-      db.c('feedback').insertOne(data, function(err, result) {
-        if (err) return reject(err);
-        resolve(result.result);
-      });
-    })
-  }
-
-  if (ctx.request.body.hasOwnProperty('suggest') && ctx.request.body.suggest.length > 0) {
-    let data = {
-      suggest: ctx.request.body.suggest,
-      contact: contact,
-      createTime: +new Date()
-    };
-    let res = await insertFeedback(data);
-    ctx.body = {
-      code: 200,
-      data: res
-    };
-  } else {
-    ctx.body = {
-      code: 999,
-      error: 'suggest字段不能为空！'
-    };
-  }
 
 }
 
