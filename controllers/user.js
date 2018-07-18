@@ -1,6 +1,5 @@
 const db = require('../lib/mongodb');
 const ObjectID = require('mongodb').ObjectID;
-const getQueryString = require('../lib/util').getQueryString;
 const superagent = require('superagent');
 const Config = require('../config');
 const { exec } = require('child_process');
@@ -24,7 +23,7 @@ UserController.login = async function (ctx) {
 	// 使用系统命令生成真随机数
 	function generateRandomNum () {
 		return new Promise((resolve, reject) => {
-			exec('sudo /dev/urandom | head -n 10 | md5sum | head -c 10', (err, stdout, stderr) => {
+			exec('cat /dev/urandom | head -n 10 | md5sum | head -c 10', (err, stdout, stderr) => {
 				if(err) {
 					reject(err);
 				} else {
@@ -33,26 +32,94 @@ UserController.login = async function (ctx) {
 			})
 		})
 	}
+	// 保存3rd_session信息
+	function insertThirdSession (key, value) {
+		return new Promise(function (resolve, reject) {
+			// 保存3rd_session信息
+			db.c('third_session').find({ [key]: key }).toArray(function (err, docs) {
+				if (err) {
+					reject(err)
+				}
+				if (docs.length === 0) {
+					db.c('third_session').insertOne({[key]: value}, function (err) {
+						if (err) {
+							reject(err);
+						}
+						resolve()
+					});
+				}
+			})
+		})
+	}
+	// 保存用户信息
+	function insertUserInfo (openid, userInfo) {
+		return new Promise(function (resolve, reject) {
+			db.c('user').find({ openid: openid }).toArray(function (err, docs) {
+				if (err) {
+					reject(err)
+				}
+				if (docs.length === 0) {
+					db.c('user').insertOne({
+						openid: openid,
+						nickname:  userInfo.nickName,
+						gender:  userInfo.gender,
+						language:  userInfo.language,
+						city:  userInfo.city,
+						province:  userInfo.province,
+						country:  userInfo.country,
+						avatarUrl:  userInfo.avatarUrl,
+						collections: []
+					}, function (err) {
+						if (err) {
+							reject(err)
+						}
+						resolve()
+					})
+				} else {
+					resolve()
+				}
+			})
+		})
+	}
+	
+	let wxRes, thirdSessionKey, thirdSessionValue
 	const jsCode = ctx.request.body.code;
-	const wxRes = await getWxOpenId(jsCode, Config.WeChat.APPID, Config.WeChat.SECRET);
-	const thirdSessionKey = await generateRandomNum();
-	const thirdSessionValue = wxRes.openid + wxRes.session_key;
-	// 保存3rd_session
-	console.log(db.c('third_session').find({_id: ObjectID(wxRes.openid)}).toArray())
-
-
-	// 注册流程
-	// 判断数据库是否记录,
-	// 是，更新session_key、过期时间
-	// 否，记录openid、session_key、过期时间、用户信息
-	// 返回3rdsession
+	
+	try {
+		wxRes = await getWxOpenId(jsCode, Config.WeChat.APPID, Config.WeChat.SECRET);
+	} catch(e) {
+		ctx.body = {
+			code: 999,
+			error: e
+		};
+	}
+	
+	try {
+		thirdSessionKey = await generateRandomNum();
+	} catch(e) {
+		ctx.body = {
+			code: 999,
+			error: e
+		};
+	}
+	
+	thirdSessionValue = wxRes.openid + '|' + wxRes.session_key;
+	
+	//  保存third_session和用户信息
+	try {
+		await insertThirdSession(thirdSessionKey, thirdSessionValue);
+		await insertUserInfo(wxRes.openid, ctx.request.body.userInfo);
+	} catch(e) {
+		ctx.body = {
+			code: 999,
+			error: e
+		};
+	}
+	
 	ctx.body = {
 		code: 200,
-		data: {
-			thirdSession: thirdSessionKey
-		}
+		thirdSession: thirdSessionKey
 	};
-
 }
 
 UserController.getUserCollection = async function (ctx, next) {
@@ -64,6 +131,7 @@ UserController.getUserCollection = async function (ctx, next) {
 	};
 }
 
+// 废弃
 UserController.postFeedback = async function (ctx, next) {
 	let contact = ctx.request.body.hasOwnProperty('contact') ? ctx.request.body.contact : '';
 
