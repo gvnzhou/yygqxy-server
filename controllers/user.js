@@ -36,12 +36,12 @@ UserController.login = async function (ctx) {
 	function insertThirdSession (key, value) {
 		return new Promise(function (resolve, reject) {
 			// 保存3rd_session信息
-			db.c('third_session').find({ [key]: key }).toArray(function (err, docs) {
+			db.c('third_session').find({ key: key }).toArray(function (err, docs) {
 				if (err) {
 					reject(err)
 				}
 				if (docs.length === 0) {
-					db.c('third_session').insertOne({[key]: value}, function (err) {
+					db.c('third_session').insertOne({key: key, value: value}, function (err) {
 						if (err) {
 							reject(err);
 						}
@@ -122,9 +122,78 @@ UserController.login = async function (ctx) {
 	};
 }
 
+UserController.AddUserCollection = async function (ctx, next) {
+	const thirdSession = ctx.request.header['third-session']
+	// 验证thirdSession
+	function verifyThirdSession () {
+		return new Promise(function (resolve, reject) {
+			db.c('third_session').find({ key: thirdSession }).toArray(function (err, docs) {
+				if (err) {
+					reject(err)
+				}
+				if (docs.length) {
+					resolve(docs)
+				} else {
+					resolve(false)
+				}
+			})
+		})
+	}
+	// 更新收藏
+	function addCollections(openid, id) {
+		return new Promise(function (resolve, reject) {
+			db.c('user').find({ openid: openid }).toArray(function (err, docs) {
+				if (err) {
+					reject(err)
+				}
+				if (docs.length) {
+					if (docs[0].collections.indexOf(id) === -1) {
+						docs[0].collections.push(id)
+						db.c('user').update({ openid: openid }, { $set: { collections: docs[0].collections } }, function (err, res) {
+							if (err) {
+								reject(err)
+							}
+							resolve(res)
+						})
+					} else {
+						reject('请勿重复收藏')
+					}
+				} else {
+					reject('未查到到当前用户')
+				}
+			})
+		})
+	}
+	try {
+		let authRes = await verifyThirdSession()
+		if (authRes) {
+			let updateRes = await addCollections(authRes[0].value.split('|')[0], ctx.request.body.id)
+			if (updateRes.result.n === 1) {
+				ctx.body = {
+					code: 200,
+					error: '收藏成功'
+				};
+			}
+		} else {
+			ctx.body = {
+				code: 999,
+				error: '请先授权登录'
+			};
+		}
+	} catch (e) {
+		ctx.body = {
+			code: 999,
+			error: e
+		};
+	}
+	
+}
+
 UserController.getUserCollection = async function (ctx, next) {
 	// 校验用户身份，查询openid和session_key，判断是否过期
-
+	const thirdSession = ctx.request.header['third-session']
+	
+	
 	ctx.body = {
 		code: 200,
 		data: {}

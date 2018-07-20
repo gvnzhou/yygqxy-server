@@ -2,7 +2,7 @@ const db = require('../lib/mongodb');
 const ObjectID = require('mongodb').ObjectID;
 // const assert = require('assert');
 
-let SongController = {};
+const SongController = {};
 
 // limit、keyword 、page、per_page、sortby、order
 SongController.getSongList = async (ctx, next) => {
