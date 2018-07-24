@@ -12,11 +12,8 @@ UserController.login = async function (ctx) {
 		const wxReqUrl = `https://api.weixin.qq.com/sns/jscode2session?appid=${appid}&secret=${secret}&js_code=${code}&grant_type=authorization_code`;
 		return new Promise((resolve, reject) => {
 			superagent.get(wxReqUrl).end(function (err, res) {
-				if (err) {
-					reject(err);
-				} else {
-					resolve(JSON.parse(res.text));
-				}
+				if (err) reject(err);
+				resolve(JSON.parse(res.text));
 			});
 		})
 	}
@@ -24,11 +21,8 @@ UserController.login = async function (ctx) {
 	function generateRandomNum () {
 		return new Promise((resolve, reject) => {
 			exec('cat /dev/urandom | head -n 10 | md5sum | head -c 10', (err, stdout, stderr) => {
-				if(err) {
-					reject(err);
-				} else {
-					resolve(stdout);
-				}
+				if(err) reject(err)
+				resolve(stdout)
 			})
 		})
 	}
@@ -37,9 +31,7 @@ UserController.login = async function (ctx) {
 		return new Promise(function (resolve, reject) {
 			// 保存3rd_session信息
 			db.c('third_session').find({ key: key }).toArray(function (err, docs) {
-				if (err) {
-					reject(err)
-				}
+				if (err) reject(err)
 				if (docs.length === 0) {
 					db.c('third_session').insertOne({key: key, value: value}, function (err) {
 						if (err) {
@@ -122,37 +114,18 @@ UserController.login = async function (ctx) {
 	};
 }
 
-UserController.AddUserCollection = async function (ctx, next) {
-	const thirdSession = ctx.request.header['third-session']
-	// 验证thirdSession
-	function verifyThirdSession () {
-		return new Promise(function (resolve, reject) {
-			db.c('third_session').find({ key: thirdSession }).toArray(function (err, docs) {
-				if (err) {
-					reject(err)
-				}
-				if (docs.length) {
-					resolve(docs)
-				} else {
-					resolve(false)
-				}
-			})
-		})
-	}
+UserController.addUserCollection = async function (ctx, next) {
+	const openid = ctx.request.body.openid
 	// 更新收藏
 	function addCollections(openid, id) {
 		return new Promise(function (resolve, reject) {
 			db.c('user').find({ openid: openid }).toArray(function (err, docs) {
-				if (err) {
-					reject(err)
-				}
+				if (err) reject(err)
 				if (docs.length) {
 					if (docs[0].collections.indexOf(id) === -1) {
 						docs[0].collections.push(id)
 						db.c('user').update({ openid: openid }, { $set: { collections: docs[0].collections } }, function (err, res) {
-							if (err) {
-								reject(err)
-							}
+							if (err) reject(err)
 							resolve(res)
 						})
 					} else {
@@ -165,19 +138,11 @@ UserController.AddUserCollection = async function (ctx, next) {
 		})
 	}
 	try {
-		let authRes = await verifyThirdSession()
-		if (authRes) {
-			let updateRes = await addCollections(authRes[0].value.split('|')[0], ctx.request.body.id)
-			if (updateRes.result.n === 1) {
-				ctx.body = {
-					code: 200,
-					error: '收藏成功'
-				};
-			}
-		} else {
+		let updateRes = await addCollections(openid, ctx.request.body.id)
+		if (updateRes.result.n === 1) {
 			ctx.body = {
-				code: 999,
-				error: '请先授权登录'
+				code: 200,
+				error: '收藏成功'
 			};
 		}
 	} catch (e) {
@@ -189,15 +154,92 @@ UserController.AddUserCollection = async function (ctx, next) {
 	
 }
 
+UserController.deleteUserCollection = async function (ctx, next) {
+	const openid = ctx.request.body.openid
+	// 删除收藏
+	function deleteCollections(openid, id) {
+		return new Promise(function (resolve, reject) {
+			db.c('user').find({ openid: openid }).toArray(function (err, docs) {
+				if (err) reject(err)
+				if (docs.length) {
+					let idx = docs[0].collections.indexOf(id)
+					if (idx > -1) {
+						
+						docs[0].collections.splice(idx, 1)
+						
+						db.c('user').update({ openid: openid }, { $set: { collections: docs[0].collections } }, function (err, res) {
+							if (err) reject(err)
+							resolve(res)
+						})
+					} else {
+						reject('未找到收藏歌曲')
+					}
+				} else {
+					reject('未查到到当前用户')
+				}
+			})
+		})
+	}
+	try {
+		let updateRes = await deleteCollections(openid, ctx.request.body.id)
+		if (updateRes.result.n === 1) {
+			ctx.body = {
+				code: 200,
+				error: '取消收藏陈宫'
+			};
+		}
+	} catch (e) {
+		ctx.body = {
+			code: 999,
+			error: e
+		};
+	}
+}
+
 UserController.getUserCollection = async function (ctx, next) {
-	// 校验用户身份，查询openid和session_key，判断是否过期
-	const thirdSession = ctx.request.header['third-session']
+	const openid = ctx.request.body.openid
+	function queryUserCollections (openid) {
+		return new Promise(function (resolve, reject) {
+			db.c('user').find({ openid: openid }).toArray(function (err, docs) {
+				if (err) reject(err)
+				if (docs.length) {
+					resolve(docs[0].collections)
+				} else {
+					reject('用户不存在')
+				}
+			})
+		})
+	}
 	
+	function querySongData (ids) {
+		return new Promise(function (resolve, reject) {
+			let filterArr = ids.map((item) => {return { _id: ObjectID(item) }})
+			
+			db.c('song').find({ $or: filterArr }).toArray(function (err, docs) {
+				if (err) reject(err)
+				if (docs.length) {
+					resolve(docs)
+				} else {
+					reject('暂无收藏歌曲')
+				}
+			})
+		})
+	}
 	
-	ctx.body = {
-		code: 200,
-		data: {}
-	};
+	try {
+		let collectionIds = await queryUserCollections(openid)
+		let songData = await querySongData(collectionIds)
+		ctx.body = {
+			code: 200,
+			data: songData
+		};
+	} catch (e) {
+		ctx.body = {
+			code: 999,
+			error: e
+		};
+	}
+	
 }
 
 // 废弃
