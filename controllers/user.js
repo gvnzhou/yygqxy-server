@@ -217,7 +217,7 @@ UserController.getUserCollection = async function (ctx, next) {
 			
 			db.c('song').find({ $or: filterArr }).toArray(function (err, docs) {
 				if (err) reject(err)
-				if (docs.length) {
+				if (docs) {
 					resolve(docs)
 				} else {
 					reject('暂无收藏歌曲')
